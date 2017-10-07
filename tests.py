@@ -6,9 +6,10 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.action_chains import ActionChains
 
-PHANTOMJS_PATH = './node_modules/phantomjs/bin/phantomjs'
+PHANTOMJS_PATH = './node_modules/phantomjs-prebuilt/bin/phantomjs'
 CREATE_USER_URL = 'http://atomicboard.devman.org/create_test_user/'
 URL = 'http://atomicboard.devman.org/'
+TEXT_FOR_TEST = 'test_test_test'
 
 
 class AtomicBoardTest(unittest.TestCase):
@@ -17,51 +18,44 @@ class AtomicBoardTest(unittest.TestCase):
         self.driver = webdriver.PhantomJS(PHANTOMJS_PATH)
         self.driver.set_window_size(1366, 768)
         self.driver.get(CREATE_USER_URL)
-        self.driver.find_element_by_xpath(
-            '//body/form/button[@type="submit"]').click()
+        self.driver.find_element(By.TAG_NAME, 'button').click()
         self.driver.get(URL)
         WebDriverWait(self.driver, 25).until(
             EC.presence_of_element_located((By.CLASS_NAME, 'tickets-column')))
 
     def test_whole_page_loaded(self):
-        assert self.driver.find_element_by_xpath(
-            '//*[contains(@class, "js-tickets-column")]')
+        assert self.driver.find_element(By.CLASS_NAME, 'js-tickets-column')
 
     def test_edit_exist_task(self):
-        self.driver.find_element_by_xpath(
-            '//span[@editable-text="ticket.title"]').click()
-        task_input = self.driver.find_element_by_xpath(
-            '//input[contains(@class, "editable-input")]')
+        self.driver.find_element(By.CSS_SELECTOR, 'span.editable').click()
+        task_input = self.driver.find_element(By.CLASS_NAME, 'editable-input')
         task_input.clear()
-        task_input.send_keys('test_task_edit')
-        self.driver.find_element_by_xpath(
-            '//span[@class="glyphicon glyphicon-ok"]').click()
-        assert self.driver.find_element_by_xpath(
-            '//*[contains(text(), "test_task_edit")]')
+        task_input.send_keys(TEXT_FOR_TEST)
+        self.driver.find_element(By.CLASS_NAME, 'glyphicon-ok').click()
+        tasks = self.driver.find_elements(By.CLASS_NAME, 'editable')
+        test_text = [x.text for x in tasks if x.text == TEXT_FOR_TEST][0]
+        assert test_text == TEXT_FOR_TEST
 
     def test_mark_task_closed(self):
-        task = self.driver.find_element_by_xpath(
-            '//span[contains(@class, "js-tickets-column")][1]/div[contains(@class, "js-ticket")]')
-        task.find_element_by_xpath(
-            '//span[contains(@class, "ticket_status") and contains(text(), "open")]').click()
+        tasks = self.driver.find_elements(By.CLASS_NAME, 'ticket_status')
+        open_task = [e for e in tasks if e.text == 'open'][0]
+        open_task.click()
         sleep(5)
-        self.driver.find_element_by_xpath(
-            '//button[contains(@class, "change-status-form__button") and contains(text(), "closed")]').click()
-        assert task.find_element_by_xpath(
-            '//span[contains(@class, "ticket_status") and contains(text(), "closed")]')
+        buttons = self.driver.find_elements(By.CLASS_NAME,
+                                            'change-status-form__button')
+        [b for b in buttons if b.text == 'closed'][0].click()
+        assert open_task.text == 'closed'
 
     def test_add_new_task(self):
-        add_span = self.driver.find_element_by_xpath(
-            '//span[contains(@class, "add-ticket-block_button")]')
+        add_span = self.driver.find_element(By.CLASS_NAME,
+                                            'add-ticket-block_button')
         add_span.click()
-        input_field = add_span.find_element_by_xpath(
-            '//following-sibling::form/div/input')
+        input_field = self.driver.find_element(By.CLASS_NAME, 'editable-input')
         input_field.send_keys('new_task_added')
-        input_field.find_element_by_xpath(
-            '//following-sibling::span/button/span[@class="glyphicon glyphicon-ok"]').click()
+        self.driver.find_element(By.CLASS_NAME, 'glyphicon-ok').click()
         sleep(5)
-        assert self.driver.find_element_by_xpath(
-            '//span[contains(text(), "new_task_added")]')
+        tasks = self.driver.find_elements(By.CLASS_NAME, 'editable')
+        assert len([t for t in tasks if t.text == 'new_task_added']) == 1
 
     def tearDown(self):
         self.driver.close()
