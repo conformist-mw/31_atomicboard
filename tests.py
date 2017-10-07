@@ -37,12 +37,12 @@ class AtomicBoardTest(unittest.TestCase):
 
     def test_mark_task_closed(self):
         tasks = self.driver.find_elements(By.CLASS_NAME, 'ticket_status')
-        open_task = [e for e in tasks if e.text == 'open'][0]
+        open_task = [task for task in tasks if task.text == 'open'][0]
         open_task.click()
         sleep(5)
         buttons = self.driver.find_elements(By.CLASS_NAME,
                                             'change-status-form__button')
-        [b for b in buttons if b.text == 'closed'][0].click()
+        [but for but in buttons if but.text == 'closed'][0].click()
         assert open_task.text == 'closed'
 
     def test_add_new_task(self):
@@ -54,7 +54,8 @@ class AtomicBoardTest(unittest.TestCase):
         self.driver.find_element(By.CLASS_NAME, 'glyphicon-ok').click()
         sleep(5)
         tasks = self.driver.find_elements(By.CLASS_NAME, 'editable')
-        assert len([t for t in tasks if t.text == 'new_task_added']) == 1
+        assert len(
+            [task for task in tasks if task.text == 'new_task_added']) == 1
 
     def test_drag_and_drop_task(self):
         cols = self.driver.find_elements(By.CLASS_NAME, 'tickets-column')
