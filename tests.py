@@ -4,7 +4,6 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.action_chains import ActionChains
 
 PHANTOMJS_PATH = './node_modules/phantomjs-prebuilt/bin/phantomjs'
 CREATE_USER_URL = 'http://atomicboard.devman.org/create_test_user/'
@@ -56,6 +55,19 @@ class AtomicBoardTest(unittest.TestCase):
         sleep(5)
         tasks = self.driver.find_elements(By.CLASS_NAME, 'editable')
         assert len([t for t in tasks if t.text == 'new_task_added']) == 1
+
+    def test_drag_and_drop_task(self):
+        cols = self.driver.find_elements(By.CLASS_NAME, 'tickets-column')
+        task = cols[0].find_element(By.CLASS_NAME, 'js-ticket')
+        task_text = task.text
+        with open("drag_and_drop_helper.js") as drag_and_drop_file:
+            drag_and_drop_js = drag_and_drop_file.read()
+        self.driver.execute_script(
+            drag_and_drop_js + ('$("div.js-ticket:eq(0)").simulateDragDrop('
+                                '{dropTarget: "span.tickets-column:eq(1)"});'))
+
+        target_text = cols[1].find_element(By.CLASS_NAME, 'js-ticket').text
+        assert task_text == target_text
 
     def tearDown(self):
         self.driver.close()
