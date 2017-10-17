@@ -59,8 +59,6 @@ class AtomicBoardTest(unittest.TestCase):
         assert any([task for task in tasks if task.text == TEST_TASK_HEADING])
 
     def test_drag_and_drop_task(self):
-        # This test running with drug_n_drop_helper.js script
-        # check the SO answer https://stackoverflow.com/a/29381532/3355831
         cols = self.driver.find_elements(By.CLASS_NAME, 'tickets-column')
         task = cols[0].find_element(By.CLASS_NAME, 'js-ticket')
         task_text = task.text
