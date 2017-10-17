@@ -25,7 +25,7 @@ This tests require a bunch of various technologies:
     ```
 - PHANTOMJS requirements:
     ```bash
-    npm i
+    npm install
     ```
     If npm is unavailable on your system please checkout [nodejs installation](https://nodejs.org/en/download/package-manager/) for various systems.
 
